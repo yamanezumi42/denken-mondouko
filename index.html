@@ -106,6 +106,13 @@ select option { background: var(--bg3); }
 }
 .btn-start:active { background: var(--accent2); }
 /* ===== QUIZ SCREEN ===== */
+/* quiz screenはflexを使わずblockで自然に流す */
+#screen-quiz {
+  display: block !important;
+}
+#screen-quiz > * {
+  margin-bottom: 12px;
+}
 #quiz-header {
   background: var(--bg2); border-radius: 10px;
   padding: 10px 14px; display: flex; align-items: center; gap: 12px;
@@ -113,28 +120,47 @@ select option { background: var(--bg3); }
 #quiz-progress-text { font-size: 13px; color: var(--text2); flex: 1; }
 #quiz-correct-rate { font-size: 14px; font-weight: 700; color: var(--accent); }
 #quiz-img-wrap {
-  background: var(--bg2); border-radius: 10px;
+  background: white; border-radius: 10px;
   border: 1px solid var(--border);
-  flex-shrink: 0;
+  overflow: hidden;
 }
 #quiz-img-q {
-  width: 100%; height: auto; display: block; border-radius: 10px;
-  transition: max-height .3s ease;
+  width: 100%; height: auto; display: block;
+  transition: max-height .4s ease;
 }
-#quiz-img-q.spoiler {
-  max-height: 55vh;
-  object-fit: cover;
-  object-position: top center;
+/* diff=1 spoiler: グラデーションオーバーレイで下半分を隠す */
+#quiz-img-wrap.spoiler {
+  position: relative;
+  max-height: 60vh;
+  overflow: hidden;
+}
+#quiz-img-wrap.spoiler::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 80px;
+  background: linear-gradient(transparent, rgba(36,36,36,.95));
+  pointer-events: none;
 }
 .spoiler-notice {
-  font-size: 11px; color: var(--text2); text-align: center;
-  padding: 6px; background: var(--bg3); border-radius: 0 0 10px 10px;
+  font-size: 11px; color: var(--accent); text-align: center;
+  padding: 5px 8px; background: rgba(224,124,0,.12);
+  border-top: 1px solid rgba(224,124,0,.3);
   display: none;
 }
 .spoiler-notice.visible { display: block; }
 #quiz-img-a-wrap img {
   width: 100%; height: auto; display: block;
   border-top: 1px solid var(--border);
+}
+/* 選択肢ボタンをstickyにして常に画面下部に表示 */
+.btn-choices {
+  position: sticky;
+  bottom: calc(var(--nav-h) + 8px);
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 20;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.4);
 }
 #quiz-img-a-wrap { display: none; }
 #quiz-answer-label {
@@ -746,14 +772,15 @@ function renderQuestion() {
   const imgQ = document.getElementById('quiz-img-q');
   imgQ.src = p.img_q;
   imgQ.alt = `${p.year} 問${p.q_num}`;
-  // Diff=1: same page has answer — hide bottom with spoiler
+  // Diff=1: same page has answer — hide bottom with spoiler on wrapper
   const isSamePage = (!p.img_a || p.img_a.length === 0);
+  const imgWrap = document.getElementById('quiz-img-wrap');
   const notice = document.getElementById('spoiler-notice');
   if (isSamePage) {
-    imgQ.classList.add('spoiler');
+    imgWrap.classList.add('spoiler');
     notice.classList.add('visible');
   } else {
-    imgQ.classList.remove('spoiler');
+    imgWrap.classList.remove('spoiler');
     notice.classList.remove('visible');
   }
 
@@ -824,7 +851,7 @@ function selectAnswer(n) {
   lbl.textContent = correct ? '✅ 正解！' : `❌ 不正解  正解は ⑤`.replace('⑤', ['①','②','③','④','⑤'][p.answers.main-1]);
 
   // Remove spoiler on answer
-  document.getElementById('quiz-img-q').classList.remove('spoiler');
+  document.getElementById('quiz-img-wrap').classList.remove('spoiler');
   document.getElementById('spoiler-notice').classList.remove('visible');
 
   // Show explanation images
