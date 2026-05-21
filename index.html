@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>電験3種 過去問道場</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root {
+  --bg:      #1a1a1a;
+  --bg2:     #242424;
+  --bg3:     #2e2e2e;
+  --bg4:     #383838;
+  --accent:  #e07c00;
+  --accent2: #ff9422;
+  --text:    #f0f0f0;
+  --text2:   #aaaaaa;
+  --success: #4caf50;
+  --error:   #e05050;
+  --border:  #3a3a3a;
+  --nav-h:   60px;
+  --hdr-h:   52px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px; line-height: 1.5; overflow: hidden;
+}
+#app {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+}
+/* ===== HEADER ===== */
+#hdr {
+  flex-shrink: 0; height: var(--hdr-h);
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 16px; gap: 12px;
+  position: relative; z-index: 10;
+}
+#hdr-title { font-size: 16px; font-weight: 700; color: var(--accent); flex: 1; }
+#hdr-info { font-size: 12px; color: var(--text2); text-align: right; }
+#hdr-streak { font-size: 13px; }
+/* ===== SCREENS ===== */
+#screens {
+  flex: 1; overflow: hidden; position: relative;
+}
+.screen {
+  position: absolute; inset: 0;
+  overflow-y: auto; padding: 16px;
+  display: none; flex-direction: column; gap: 16px;
+}
+.screen.active { display: flex; }
+/* ===== BOTTOM NAV ===== */
+#nav {
+  flex-shrink: 0; height: var(--nav-h);
+  background: var(--bg2); border-top: 1px solid var(--border);
+  display: flex;
+}
+.nav-btn {
+  flex: 1; border: none; background: none; color: var(--text2);
+  font-size: 11px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  cursor: pointer; transition: color .2s;
+}
+.nav-btn .icon { font-size: 22px; }
+.nav-btn.active { color: var(--accent); }
+/* ===== CARDS ===== */
+.card {
+  background: var(--bg2); border-radius: 12px;
+  padding: 16px; border: 1px solid var(--border);
+}
+.card-title {
+  font-size: 13px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px;
+}
+/* ===== FILTER SCREEN ===== */
+.countdown-banner {
+  background: linear-gradient(135deg, #2a1a00, #3a2200);
+  border: 1px solid var(--accent); border-radius: 12px;
+  padding: 16px; text-align: center;
+}
+.countdown-days { font-size: 40px; font-weight: 900; color: var(--accent); line-height: 1; }
+.countdown-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+.daily-progress { display: flex; gap: 12px; }
+.daily-stat { flex: 1; text-align: center; }
+.daily-num { font-size: 28px; font-weight: 700; color: var(--accent); }
+.daily-sub { font-size: 11px; color: var(--text2); }
+.progress-bar-wrap { height: 6px; background: var(--bg3); border-radius: 3px; margin-top: 8px; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width .4s; }
+label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 4px; }
+select, input[type="date"], input[type="number"] {
+  width: 100%; padding: 10px 12px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 14px; -webkit-appearance: none;
+}
+select option { background: var(--bg3); }
+.filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn-start {
+  width: 100%; padding: 16px; background: var(--accent); color: #fff;
+  font-size: 17px; font-weight: 700; border: none; border-radius: 12px;
+  cursor: pointer; letter-spacing: .03em; transition: background .2s;
+}
+.btn-start:active { background: var(--accent2); }
+/* ===== QUIZ SCREEN ===== */
+#quiz-header {
+  background: var(--bg2); border-radius: 10px;
+  padding: 10px 14px; display: flex; align-items: center; gap: 12px;
+}
+#quiz-progress-text { font-size: 13px; color: var(--text2); flex: 1; }
+#quiz-correct-rate { font-size: 14px; font-weight: 700; color: var(--accent); }
+#quiz-img-wrap {
+  background: var(--bg2); border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+#quiz-img-q, #quiz-img-a-wrap img {
+  width: 100%; display: block;
+}
+#quiz-img-a-wrap { display: none; }
+#quiz-answer-label {
+  display: none; padding: 12px 16px; border-radius: 10px;
+  font-size: 16px; font-weight: 700; text-align: center;
+}
+#quiz-answer-label.correct {
+  background: #1a3a1a; color: var(--success); border: 1px solid var(--success);
+}
+#quiz-answer-label.wrong {
+  background: #3a1a1a; color: var(--error); border: 1px solid var(--error);
+}
+.btn-choices { display: flex; flex-direction: column; gap: 8px; }
+.choice-btn {
+  width: 100%; padding: 14px 16px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 15px; cursor: pointer;
+  text-align: left; transition: all .15s; position: relative;
+}
+.choice-btn:active { transform: scale(.98); }
+.choice-btn.selected-correct {
+  background: #1a3a1a; border-color: var(--success); color: var(--success);
+}
+.choice-btn.selected-wrong {
+  background: #3a1a1a; border-color: var(--error); color: var(--error);
+}
+.choice-btn.show-correct {
+  background: #1a3a1a; border-color: var(--success); color: var(--success);
+}
+.choice-btn:disabled { cursor: default; }
+.btn-next {
+  width: 100%; padding: 14px; background: var(--bg2);
+  border: 1px solid var(--accent); border-radius: 10px;
+  color: var(--accent); font-size: 16px; font-weight: 700;
+  cursor: pointer; display: none;
+  transition: background .2s;
+}
+.btn-next:active { background: var(--bg3); }
+/* ===== STATS SCREEN ===== */
+.streak-banner {
+  background: linear-gradient(135deg, #2a1800, #3a2000);
+  border: 1px solid var(--accent); border-radius: 12px;
+  padding: 16px; display: flex; align-items: center; gap: 12px;
+}
+.streak-flame { font-size: 36px; }
+.streak-count { font-size: 32px; font-weight: 900; color: var(--accent); }
+.streak-label { font-size: 13px; color: var(--text2); }
+/* Calendar heatmap */
+.calendar-wrap { overflow-x: auto; padding-bottom: 4px; }
+.cal-grid {
+  display: flex; gap: 3px; min-width: max-content;
+}
+.cal-week { display: flex; flex-direction: column; gap: 3px; }
+.cal-day {
+  width: 12px; height: 12px; border-radius: 2px;
+  background: var(--bg3); flex-shrink: 0;
+}
+.cal-day.l1 { background: #3a2400; }
+.cal-day.l2 { background: #6b4300; }
+.cal-day.l3 { background: #a86500; }
+.cal-day.l4 { background: var(--accent); }
+.cal-day.goal { box-shadow: 0 0 0 1px var(--accent2); }
+.cal-months {
+  display: flex; font-size: 10px; color: var(--text2);
+  gap: 3px; padding-left: 0; margin-bottom: 4px;
+}
+/* Unit chart */
+.unit-chart { display: flex; flex-direction: column; gap: 8px; }
+.unit-row { display: flex; align-items: center; gap: 8px; }
+.unit-name-col { font-size: 11px; color: var(--text2); width: 160px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.unit-bar-wrap { flex: 1; height: 10px; background: var(--bg3); border-radius: 5px; overflow: hidden; }
+.unit-bar { height: 100%; border-radius: 5px; transition: width .5s; }
+.unit-pct { font-size: 11px; color: var(--text2); width: 36px; text-align: right; flex-shrink: 0; }
+/* ===== CAT COLLECTION ===== */
+.cat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.cat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.cat-card.unlocked { border-color: var(--accent); }
+.cat-card.locked { opacity: .5; filter: grayscale(1); }
+.cat-svg-wrap { width: 72px; height: 72px; }
+.cat-svg-wrap svg { width: 100%; height: 100%; }
+.cat-breed { font-size: 10px; font-weight: 600; color: var(--accent); }
+.cat-unit { font-size: 9px; color: var(--text2); }
+/* ===== SETTINGS ===== */
+.settings-row { display: flex; flex-direction: column; gap: 8px; }
+.btn-secondary {
+  width: 100%; padding: 12px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 14px; cursor: pointer;
+}
+.firebase-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; padding: 4px 10px; border-radius: 20px;
+  background: var(--bg3);
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.green { background: var(--success); }
+.dot.gray { background: var(--text2); }
+/* ===== MISC ===== */
+.section-header {
+  font-size: 15px; font-weight: 700; margin-bottom: 2px;
+}
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--text2);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+/* Quiz result animation */
+@keyframes pop {
+  0% { transform: scale(.8); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop-in { animation: pop .3s ease; }
+/* Responsive */
+@media (min-width: 600px) {
+  .cat-grid { grid-template-columns: repeat(5, 1fr); }
+  .filter-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <div id="hdr">
+    <div id="hdr-title">⚡ 電験3種 過去問道場</div>
+    <div id="hdr-streak"></div>
+    <div id="hdr-info"></div>
+  </div>
+
+  <!-- SCREENS -->
+  <div id="screens">
+
+    <!-- ===== HOME SCREEN ===== -->
+    <div id="screen-home" class="screen active">
+      <div id="countdown-wrap"></div>
+
+      <!-- 今日の進捗 -->
+      <div class="card">
+        <div class="card-title">今日の学習</div>
+        <div class="daily-progress">
+          <div class="daily-stat">
+            <div class="daily-num" id="today-count">0</div>
+            <div class="daily-sub">問</div>
+          </div>
+          <div class="daily-stat">
+            <div class="daily-num" id="today-correct">0</div>
+            <div class="daily-sub">正解</div>
+          </div>
+          <div class="daily-stat">
+            <div class="daily-num" id="today-rate">—</div>
+            <div class="daily-sub">正解率</div>
+          </div>
+        </div>
+        <div class="progress-bar-wrap" style="margin-top:12px">
+          <div class="progress-bar" id="today-bar" style="width:0%"></div>
+        </div>
+        <div id="today-goal-label" style="font-size:11px;color:var(--text2);margin-top:4px;text-align:right"></div>
+      </div>
+
+      <!-- フィルタ -->
+      <div class="card">
+        <div class="card-title">フィルタ</div>
+        <div class="filter-grid">
+          <div>
+            <label>年度</label>
+            <select id="f-year"></select>
+          </div>
+          <div>
+            <label>単元</label>
+            <select id="f-unit"></select>
+          </div>
+          <div>
+            <label>難易度</label>
+            <select id="f-diff"></select>
+          </div>
+          <div>
+            <label>出題順</label>
+            <select id="f-order">
+              <option value="asc">古い順</option>
+              <option value="random">ランダム</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="filter-count" style="text-align:center;color:var(--text2);font-size:13px;margin-top:-8px"></div>
+      <button class="btn-start" onclick="startQuiz()">問題を始める →</button>
+
+      <!-- 直近の記録 -->
+      <div class="card">
+        <div class="card-title">総合記録</div>
+        <div style="display:flex;gap:16px;text-align:center">
+          <div style="flex:1"><div class="daily-num" id="total-count">0</div><div class="daily-sub">総問数</div></div>
+          <div style="flex:1"><div class="daily-num" id="total-correct">0</div><div class="daily-sub">正解</div></div>
+          <div style="flex:1"><div class="daily-num" id="total-rate">—</div><div class="daily-sub">正解率</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== QUIZ SCREEN ===== -->
+    <div id="screen-quiz" class="screen">
+      <div id="quiz-header">
+        <span id="quiz-progress-text"></span>
+        <span id="quiz-correct-rate"></span>
+      </div>
+      <div id="quiz-answer-label"></div>
+      <div id="quiz-img-wrap">
+        <img id="quiz-img-q" src="" alt="問題画像" loading="lazy">
+        <div id="quiz-img-a-wrap"></div>
+      </div>
+      <div class="btn-choices" id="quiz-choices">
+        <button class="choice-btn" onclick="selectAnswer(1)">① </button>
+        <button class="choice-btn" onclick="selectAnswer(2)">② </button>
+        <button class="choice-btn" onclick="selectAnswer(3)">③ </button>
+        <button class="choice-btn" onclick="selectAnswer(4)">④ </button>
+        <button class="choice-btn" onclick="selectAnswer(5)">⑤ </button>
+      </div>
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">次の問題 →</button>
+      <button class="btn-secondary" onclick="endQuiz()" style="margin-top:4px">終了してホームへ</button>
+    </div>
+
+    <!-- ===== STATS SCREEN ===== -->
+    <div id="screen-stats" class="screen">
+      <div id="streak-card" class="streak-banner">
+        <div class="streak-flame">🔥</div>
+        <div>
+          <div><span class="streak-count" id="streak-num">0</span><span style="font-size:16px;color:var(--text2)"> 日連続</span></div>
+          <div class="streak-label">継続学習ストリーク</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">学習カレンダー</div>
+        <div id="cal-months-row" class="cal-months"></div>
+        <div class="calendar-wrap">
+          <div id="cal-grid" class="cal-grid"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;color:var(--text2)">
+          <span>少</span>
+          <div class="cal-day"></div>
+          <div class="cal-day l1"></div>
+          <div class="cal-day l2"></div>
+          <div class="cal-day l3"></div>
+          <div class="cal-day l4"></div>
+          <span>多</span>
+          <div style="margin-left:8px;display:flex;align-items:center;gap:4px">
+            <div class="cal-day goal" style="background:var(--accent)"></div>
+            <span>目標達成</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">単元別 正解率</div>
+        <div id="unit-chart" class="unit-chart"></div>
+      </div>
+    </div>
+
+    <!-- ===== COLLECTION SCREEN ===== -->
+    <div id="screen-cats" class="screen">
+      <div class="card" style="padding:12px 16px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="section-header">🐱 猫コレクション</div>
+          <div id="cat-count" style="font-size:13px;color:var(--text2)"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">単元をクリアすると猫が解放されます</div>
+      </div>
+      <div id="cat-grid" class="cat-grid"></div>
+    </div>
+
+    <!-- ===== SETTINGS SCREEN ===== -->
+    <div id="screen-settings" class="screen">
+      <div class="card">
+        <div class="card-title">試験日設定</div>
+        <div class="settings-row">
+          <label>試験日</label>
+          <input type="date" id="setting-exam-date">
+          <div style="font-size:12px;color:var(--text2)">設定すると残り日数が表示されます</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">学習目標</div>
+        <div class="settings-row">
+          <label>1日の目標問題数</label>
+          <input type="number" id="setting-daily-goal" min="1" max="100" value="10">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">データ同期</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span id="firebase-badge" class="firebase-badge">
+            <span class="dot gray" id="firebase-dot"></span>
+            <span id="firebase-label">Firebase: 接続中...</span>
+          </span>
+        </div>
+        <div style="font-size:12px;color:var(--text2)">PCとスマホの進捗はFirebaseに自動同期されます。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">データ管理</div>
+        <button class="btn-secondary" onclick="exportData()">📤 データをエクスポート</button>
+        <button class="btn-secondary" onclick="confirmReset()" style="margin-top:8px;color:var(--error);border-color:var(--error)">🗑️ 全データをリセット</button>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="nav">
+    <button class="nav-btn active" onclick="showScreen('home')" id="nav-home">
+      <span class="icon">🏠</span><span>ホーム</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('quiz')" id="nav-quiz" style="display:none">
+      <span class="icon">📝</span><span>問題</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('stats')" id="nav-stats">
+      <span class="icon">📊</span><span>統計</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('cats')" id="nav-cats">
+      <span class="icon">🐱</span><span>コレクション</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('settings')" id="nav-settings">
+      <span class="icon">⚙️</span><span>設定</span>
+    </button>
+  </nav>
+</div><!-- /app -->
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+'use strict';
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAWbhKtoV5hKxACeydj8aQknMKjmqtXH38",
+  authDomain: "denken-mondouko.firebaseapp.com",
+  databaseURL: "https://denken-mondouko-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "denken-mondouko",
+  storageBucket: "denken-mondouko.firebasestorage.app",
+  messagingSenderId: "149855034136",
+  appId: "1:149855034136:web:4ac0843ae19e19dc339c6d"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+let fbConnected = false;
+db.ref('.info/connected').on('value', snap => {
+  fbConnected = snap.val() === true;
+  document.getElementById('firebase-dot').className = 'dot ' + (fbConnected ? 'green' : 'gray');
+  document.getElementById('firebase-label').textContent = 'Firebase: ' + (fbConnected ? '同期中 ✓' : 'オフライン');
+});
+
+// ============================================================
+// STATE
+// ============================================================
+let ALL_PROBLEMS = [];
+let UNITS = {};
+let filtered = [];
+let qIdx = 0;
+let sessionCorrect = 0;
+let answered = false;
+let progress = {};    // { "R7下_1": { c:2, t:5, d:"2026-05-22" } }
+let dailyStats = {};  // { "2026-05-22": { n:10, c:7 } }
+let settings = { examDate: '', dailyGoal: 10 };
+let catUnlocked = []; // unlocked unit nums
+
+const TODAY = (() => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+})();
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  loadLocal();
+  setupSettingsUI();
+  await loadData();
+  buildFilters();
+  updateHome();
+  updateHeader();
+  renderCalendar();
+  renderUnitChart();
+  renderCatGrid();
+  setupFirebaseSync();
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+
+async function loadData() {
+  const resp = await fetch('master_data.json');
+  const data = await resp.json();
+  UNITS = data.units;
+  ALL_PROBLEMS = data.problems;
+}
+
+function loadLocal() {
+  try {
+    progress    = JSON.parse(localStorage.getItem('dkp') || '{}');
+    dailyStats  = JSON.parse(localStorage.getItem('dkd') || '{}');
+    settings    = JSON.parse(localStorage.getItem('dks') || '{"examDate":"","dailyGoal":10}');
+    catUnlocked = JSON.parse(localStorage.getItem('dkc') || '[]');
+  } catch(e) {}
+}
+
+function saveLocal() {
+  localStorage.setItem('dkp', JSON.stringify(progress));
+  localStorage.setItem('dkd', JSON.stringify(dailyStats));
+  localStorage.setItem('dks', JSON.stringify(settings));
+  localStorage.setItem('dkc', JSON.stringify(catUnlocked));
+}
+
+// ============================================================
+// FIREBASE SYNC
+// ============================================================
+const FB_USER = 'user1'; // Single-user app
+function setupFirebaseSync() {
+  const ref = db.ref(`users/${FB_USER}`);
+  // Pull on connect
+  ref.once('value').then(snap => {
+    const fbData = snap.val();
+    if (!fbData) { pushToFirebase(); return; }
+    // Merge: take max values
+    if (fbData.progress) mergeProgress(fbData.progress);
+    if (fbData.dailyStats) mergeDailyStats(fbData.dailyStats);
+    if (fbData.catUnlocked) mergeCatUnlocked(fbData.catUnlocked);
+    saveLocal();
+    updateHome();
+    renderCalendar();
+    renderUnitChart();
+    renderCatGrid();
+    updateHeader();
+  });
+}
+
+function pushToFirebase() {
+  if (!fbConnected) return;
+  db.ref(`users/${FB_USER}`).set({
+    progress, dailyStats, catUnlocked,
+    ts: Date.now()
+  });
+}
+
+function mergeProgress(fbProg) {
+  for (const key in fbProg) {
+    if (!progress[key]) progress[key] = fbProg[key];
+    else {
+      progress[key].c = Math.max(progress[key].c||0, fbProg[key].c||0);
+      progress[key].t = Math.max(progress[key].t||0, fbProg[key].t||0);
+    }
+  }
+}
+function mergeDailyStats(fbDaily) {
+  for (const d in fbDaily) {
+    if (!dailyStats[d]) dailyStats[d] = fbDaily[d];
+    else {
+      dailyStats[d].n = Math.max(dailyStats[d].n||0, fbDaily[d].n||0);
+      dailyStats[d].c = Math.max(dailyStats[d].c||0, fbDaily[d].c||0);
+    }
+  }
+}
+function mergeCatUnlocked(fbCats) {
+  fbCats.forEach(u => { if (!catUnlocked.includes(u)) catUnlocked.push(u); });
+}
+
+// ============================================================
+// FILTERS
+// ============================================================
+function buildFilters() {
+  const yearSel = document.getElementById('f-year');
+  const unitSel = document.getElementById('f-unit');
+  const diffSel = document.getElementById('f-diff');
+
+  // Year options
+  const years = [...new Set(ALL_PROBLEMS.map(p => p.year))];
+  yearSel.innerHTML = '<option value="">全年度</option>' +
+    years.map(y => `<option value="${y}">${y}</option>`).join('');
+
+  // Unit options
+  unitSel.innerHTML = '<option value="">全単元</option>' +
+    Object.entries(UNITS).map(([k,v]) => `<option value="${k}">${k}. ${v}</option>`).join('');
+
+  // Difficulty options
+  diffSel.innerHTML = `<option value="">全難易度</option>
+    <option value="1">★☆☆☆☆ やさしい</option>
+    <option value="2">★★☆☆☆ やや易しい</option>
+    <option value="3">★★★☆☆ 普通</option>
+    <option value="4">★★★★☆ やや難</option>
+    <option value="5">★★★★★ 難しい</option>`;
+
+  // Listen for filter changes
+  ['f-year','f-unit','f-diff','f-order'].forEach(id => {
+    document.getElementById(id).addEventListener('change', updateFilterCount);
+  });
+  updateFilterCount();
+}
+
+function getFiltered() {
+  const year  = document.getElementById('f-year').value;
+  const unit  = document.getElementById('f-unit').value;
+  const diff  = document.getElementById('f-diff').value;
+  const order = document.getElementById('f-order').value;
+
+  let list = ALL_PROBLEMS.filter(p => {
+    if (year && p.year !== year) return false;
+    if (unit && String(p.unit_num) !== unit) return false;
+    if (diff && String(p.difficulty) !== diff) return false;
+    return true;
+  });
+
+  if (order === 'random') {
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+  }
+  return list;
+}
+
+function updateFilterCount() {
+  const n = getFiltered().length;
+  document.getElementById('filter-count').textContent = `${n}問が対象`;
+}
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+function updateHome() {
+  const ds = dailyStats[TODAY] || {n:0, c:0};
+  document.getElementById('today-count').textContent   = ds.n;
+  document.getElementById('today-correct').textContent = ds.c;
+  document.getElementById('today-rate').textContent    = ds.n > 0 ? Math.round(ds.c/ds.n*100)+'%' : '—';
+
+  const goal = settings.dailyGoal || 10;
+  const pct  = Math.min(100, Math.round((ds.n / goal) * 100));
+  document.getElementById('today-bar').style.width = pct + '%';
+  document.getElementById('today-goal-label').textContent = `目標 ${ds.n} / ${goal} 問`;
+
+  // Total stats
+  let tot = 0, cor = 0;
+  for (const k in progress) { tot += progress[k].t||0; cor += progress[k].c||0; }
+  document.getElementById('total-count').textContent   = tot;
+  document.getElementById('total-correct').textContent = cor;
+  document.getElementById('total-rate').textContent    = tot > 0 ? Math.round(cor/tot*100)+'%' : '—';
+
+  // Countdown
+  renderCountdown();
+  updateFilterCount();
+}
+
+function renderCountdown() {
+  const wrap = document.getElementById('countdown-wrap');
+  if (!settings.examDate) { wrap.innerHTML = ''; return; }
+  const examDate = new Date(settings.examDate);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  examDate.setHours(0,0,0,0);
+  const diff = Math.ceil((examDate - today) / 86400000);
+  if (diff < 0) { wrap.innerHTML = ''; return; }
+  const msg = diff === 0 ? '今日が試験日！' : diff + '日後';
+  wrap.innerHTML = `<div class="countdown-banner">
+    <div class="countdown-days">${diff === 0 ? '🎯' : diff}</div>
+    <div class="countdown-label">試験まで${msg === '今日が試験日！' ? '' : 'あと'} ${msg}</div>
+  </div>`;
+}
+
+function updateHeader() {
+  const str = calcStreak();
+  const el = document.getElementById('hdr-streak');
+  el.textContent = str > 0 ? `🔥 ${str}日` : '';
+  document.getElementById('streak-num').textContent = str;
+}
+
+// ============================================================
+// QUIZ
+// ============================================================
+function startQuiz() {
+  filtered = getFiltered();
+  if (filtered.length === 0) {
+    alert('条件に合う問題がありません。フィルタを変更してください。');
+    return;
+  }
+  qIdx = 0;
+  sessionCorrect = 0;
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  if (qIdx >= filtered.length) { endQuiz(); return; }
+  const p = filtered[qIdx];
+  answered = false;
+
+  // Progress header
+  document.getElementById('quiz-progress-text').textContent =
+    `${qIdx+1} / ${filtered.length}問  ✅ ${sessionCorrect}`;
+  const rate = qIdx > 0 ? Math.round(sessionCorrect/qIdx*100) : 0;
+  document.getElementById('quiz-correct-rate').textContent = qIdx > 0 ? rate+'%' : '';
+
+  // Question image
+  const imgQ = document.getElementById('quiz-img-q');
+  imgQ.src = p.img_q;
+  imgQ.alt = `${p.year} 問${p.q_num}`;
+
+  // Clear answer images
+  const aWrap = document.getElementById('quiz-img-a-wrap');
+  aWrap.innerHTML = '';
+  aWrap.style.display = 'none';
+
+  // Answer label
+  const lbl = document.getElementById('quiz-answer-label');
+  lbl.style.display = 'none';
+  lbl.className = '';
+
+  // Choice buttons
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = false;
+    btn.className = 'choice-btn';
+    btn.textContent = ['①','②','③','④','⑤'][i] + ' ';
+  });
+
+  // Next button
+  document.getElementById('btn-next').style.display = 'none';
+
+  // Meta info
+  const star = '★'.repeat(p.difficulty||1) + '☆'.repeat(5-(p.difficulty||1));
+  const unit = p.unit_name ? `${p.unit_num}. ${p.unit_name}` : '—';
+  const meta = `${p.year} 問${p.q_num}  ${star}  ${unit}`;
+  document.getElementById('quiz-progress-text').textContent =
+    `${qIdx+1}/${filtered.length}  ${sessionCorrect}正解`;
+  document.getElementById('quiz-correct-rate').textContent = rate > 0 ? rate+'%' : (qIdx > 0 ? '0%' : '');
+}
+
+function selectAnswer(n) {
+  if (answered) return;
+  answered = true;
+
+  const p = filtered[qIdx];
+  const correct = n === p.answers.main;
+  if (correct) sessionCorrect++;
+
+  // Record progress
+  const key = `${p.year}_${p.q_num}`;
+  if (!progress[key]) progress[key] = { c: 0, t: 0, d: TODAY };
+  progress[key].t++;
+  if (correct) progress[key].c++;
+  progress[key].d = TODAY;
+
+  // Daily stats
+  if (!dailyStats[TODAY]) dailyStats[TODAY] = { n: 0, c: 0 };
+  dailyStats[TODAY].n++;
+  if (correct) dailyStats[TODAY].c++;
+
+  saveLocal();
+  pushToFirebase();
+  checkUnitClear(p.unit_num);
+
+  // Visual feedback
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach(btn => btn.disabled = true);
+  btns[n-1].className = 'choice-btn pop-in ' + (correct ? 'selected-correct' : 'selected-wrong');
+  if (!correct) btns[p.answers.main-1].className = 'choice-btn show-correct';
+
+  // Answer label
+  const lbl = document.getElementById('quiz-answer-label');
+  lbl.style.display = 'block';
+  lbl.className = 'quiz-answer-label pop-in ' + (correct ? 'correct' : 'wrong');
+  lbl.textContent = correct ? '✅ 正解！' : `❌ 不正解  正解は ⑤`.replace('⑤', ['①','②','③','④','⑤'][p.answers.main-1]);
+
+  // Show explanation images
+  if (p.img_a && p.img_a.length > 0) {
+    const aWrap = document.getElementById('quiz-img-a-wrap');
+    aWrap.style.display = 'block';
+    aWrap.innerHTML = p.img_a.map(src =>
+      `<img src="${src}" alt="解説" loading="lazy" style="width:100%;display:block;border-top:1px solid var(--border)">`
+    ).join('');
+  }
+
+  // Show next button
+  document.getElementById('btn-next').style.display = 'block';
+
+  // Scroll to result
+  setTimeout(() => {
+    lbl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 200);
+
+  // Update home stats
+  updateHome();
+  updateHeader();
+}
+
+function nextQuestion() {
+  qIdx++;
+  if (qIdx >= filtered.length) {
+    endQuiz(); return;
+  }
+  renderQuestion();
+  // Scroll to top
+  document.getElementById('screen-quiz').scrollTo(0, 0);
+}
+
+function endQuiz() {
+  const total = Math.min(qIdx, filtered.length);
+  if (total > 0) {
+    alert(`セッション終了！\n${total}問中 ${sessionCorrect}問正解 (${Math.round(sessionCorrect/total*100)}%)`);
+  }
+  document.getElementById('nav-quiz').style.display = 'none';
+  showScreen('home');
+  updateHome();
+  renderCalendar();
+  renderUnitChart();
+}
+
+// ============================================================
+// UNIT CLEAR CHECK
+// ============================================================
+function checkUnitClear(unitNum) {
+  if (!unitNum || catUnlocked.includes(unitNum)) return;
+  const unitProblems = ALL_PROBLEMS.filter(p => p.unit_num === unitNum);
+  const totalProblems = unitProblems.length;
+  if (totalProblems === 0) return;
+
+  // Clear condition: answered >= 50% of unit problems with >= 1 correct answer
+  let answered = 0, correct = 0;
+  unitProblems.forEach(p => {
+    const key = `${p.year}_${p.q_num}`;
+    if (progress[key]) {
+      answered++;
+      if (progress[key].c > 0) correct++;
+    }
+  });
+  const clearedPct = correct / totalProblems;
+  if (clearedPct >= 0.5) {
+    catUnlocked.push(unitNum);
+    saveLocal();
+    pushToFirebase();
+    const catName = CAT_DATA[unitNum - 1]?.breed || '猫';
+    setTimeout(() => {
+      showCatUnlock(unitNum, catName);
+    }, 800);
+    renderCatGrid();
+  }
+}
+
+function showCatUnlock(unitNum, catName) {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:999`;
+  el.innerHTML = `<div style="background:var(--bg2);border:2px solid var(--accent);border-radius:20px;padding:32px;text-align:center;max-width:280px">
+    <div style="font-size:24px;color:var(--accent);font-weight:900;margin-bottom:8px">🎉 猫を発見！</div>
+    <div style="margin:16px auto;width:120px;height:120px">${getCatSVG(unitNum, true)}</div>
+    <div style="font-size:18px;font-weight:700;color:var(--text);margin:8px 0">${catName}</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">単元 ${unitNum} クリア！</div>
+    <button onclick="this.parentElement.parentElement.remove()" style="background:var(--accent);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">やった！</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+
+// ============================================================
+// CALENDAR HEATMAP
+// ============================================================
+function calcStreak() {
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (dailyStats[key] && dailyStats[key].n > 0) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      if (streak === 0 && key === TODAY) {
+        d.setDate(d.getDate() - 1); // today not yet studied
+        continue;
+      }
+      break;
+    }
+  }
+  return streak;
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  const monthsRow = document.getElementById('cal-months-row');
+  const WEEKS = 26; // 半年分
+  const goal = settings.dailyGoal || 10;
+  const maxVal = Math.max(goal, ...Object.values(dailyStats).map(d => d.n||0), 1);
+
+  // Build calendar from today backwards
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - (WEEKS * 7) + 1);
+
+  // Adjust to start on Sunday
+  startDate.setDate(startDate.getDate() - startDate.getDay());
+
+  grid.innerHTML = '';
+  monthsRow.innerHTML = '';
+
+  let lastMonth = -1;
+  let monthPositions = [];
+
+  for (let w = 0; w < WEEKS; w++) {
+    const weekEl = document.createElement('div');
+    weekEl.className = 'cal-week';
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + w * 7 + d);
+      const key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      const ds = dailyStats[key] || {n:0,c:0};
+      const n = ds.n || 0;
+
+      let level = 0;
+      if (n > 0) level = n >= goal ? 4 : n >= goal*0.6 ? 3 : n >= goal*0.3 ? 2 : 1;
+
+      const dayEl = document.createElement('div');
+      dayEl.className = 'cal-day' + (level > 0 ? ` l${level}` : '') + (n >= goal ? ' goal' : '');
+      dayEl.title = `${key}: ${n}問`;
+      weekEl.appendChild(dayEl);
+
+      if (date.getMonth() !== lastMonth) {
+        lastMonth = date.getMonth();
+        monthPositions.push({ w, month: date.getMonth() });
+      }
+    }
+    grid.appendChild(weekEl);
+  }
+
+  // Month labels
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  monthsRow.innerHTML = monthPositions.map(mp =>
+    `<span style="width:${(mp.w === monthPositions[0].w ? 0 : 15) * 1}px;display:inline-block"></span>${months[mp.month]}`
+  ).join('&nbsp;&nbsp;');
+}
+
+// ============================================================
+// UNIT CHART
+// ============================================================
+function renderUnitChart() {
+  const chart = document.getElementById('unit-chart');
+  const rows = [];
+  for (const [k, name] of Object.entries(UNITS)) {
+    const unitNum = parseInt(k);
+    const unitProblems = ALL_PROBLEMS.filter(p => p.unit_num === unitNum);
+    let tot = 0, cor = 0;
+    unitProblems.forEach(p => {
+      const key = `${p.year}_${p.q_num}`;
+      if (progress[key]) { tot += progress[key].t||0; cor += progress[key].c||0; }
+    });
+    const pct = tot > 0 ? Math.round(cor/tot*100) : -1;
+    rows.push({ unitNum, name, pct, tot });
+  }
+  // Sort by pct ascending (weakest first), untouched at end
+  rows.sort((a,b) => {
+    if (a.pct === -1 && b.pct === -1) return a.unitNum - b.unitNum;
+    if (a.pct === -1) return 1;
+    if (b.pct === -1) return -1;
+    return a.pct - b.pct;
+  });
+
+  chart.innerHTML = rows.map(r => {
+    const pctStr = r.pct >= 0 ? r.pct + '%' : '—';
+    const color = r.pct < 0 ? 'var(--bg4)' : r.pct < 50 ? 'var(--error)' : r.pct < 75 ? 'var(--accent)' : 'var(--success)';
+    const w = r.pct >= 0 ? r.pct : 0;
+    return `<div class="unit-row">
+      <div class="unit-name-col">${r.unitNum}. ${r.name}</div>
+      <div class="unit-bar-wrap"><div class="unit-bar" style="width:${w}%;background:${color}"></div></div>
+      <div class="unit-pct">${pctStr}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// CAT COLLECTION
+// ============================================================
+const CAT_DATA = [
+  { breed:"ラグドール",      en:"Ragdoll",           color:"#c8c8e8" },
+  { breed:"スコティッシュ",  en:"Scottish Fold",     color:"#a8a8a8" },
+  { breed:"ロシアンブルー",  en:"Russian Blue",      color:"#7a9ab0" },
+  { breed:"シャム",          en:"Siamese",           color:"#f5e0c0" },
+  { breed:"ベンガル",        en:"Bengal",            color:"#c8a050" },
+  { breed:"アメショー",      en:"American SH",       color:"#909090" },
+  { breed:"アビシニアン",    en:"Abyssinian",        color:"#c06030" },
+  { breed:"アンゴラ",        en:"Turkish Angora",    color:"#f0f0f0" },
+  { breed:"ブリティッシュ",  en:"British SH",        color:"#7878a0" },
+  { breed:"ペルシャ",        en:"Persian",           color:"#e8d0c0" },
+  { breed:"ノルウェジアン",  en:"Norwegian Forest",  color:"#b87840" },
+  { breed:"サイベリアン",    en:"Siberian",          color:"#c08840" },
+  { breed:"メインクーン",    en:"Maine Coon",        color:"#a07040" },
+  { breed:"バーミーズ",      en:"Burmese",           color:"#904020" },
+  { breed:"オシキャット",    en:"Ocicat",            color:"#d0a860" },
+  { breed:"エジプシャン",    en:"Egyptian Mau",      color:"#c8c860" },
+  { breed:"マンクス",        en:"Manx",              color:"#888868" },
+  { breed:"スフィンクス",    en:"Sphynx",            color:"#d0a088" },
+  { breed:"デボンレックス",  en:"Devon Rex",         color:"#c0a0d0" },
+  { breed:"コーニッシュ",    en:"Cornish Rex",       color:"#e8e0d0" },
+  { breed:"ソマリ",          en:"Somali",            color:"#d09050" },
+  { breed:"ボンベイ",        en:"Bombay",            color:"#202020" },
+  { breed:"ハバナ",          en:"Havana Brown",      color:"#603010" },
+  { breed:"セルカーク",      en:"Selkirk Rex",       color:"#b8b8c8" },
+  { breed:"ジャパボブ",      en:"Japanese Bobtail",  color:"#f0f0e8" },
+  { breed:"チンチラ",        en:"Chinchilla",        color:"#e0e0e8" },
+  { breed:"バリニーズ",      en:"Balinese",          color:"#f8e8d0" },
+  { breed:"コラット",        en:"Korat",             color:"#8898b0" },
+  { breed:"シャルトリュー", en:"Chartreux",          color:"#7890a0" },
+  { breed:"オペラ猫",        en:"Opera Cat",         color:"#9870c0" },
+  { breed:"サファリ",        en:"Safari",            color:"#c0a040" },
+  { breed:"マンチカン",      en:"Munchkin",          color:"#d0c090" },
+  { breed:"スコティッシュ立",en:"Scottish SH",       color:"#909878" },
+  { breed:"サバンナ",        en:"Savannah",          color:"#b8a840" },
+];
+
+function getCatSVG(unitNum, unlocked) {
+  const idx = (unitNum - 1) % CAT_DATA.length;
+  const cat = CAT_DATA[idx];
+  const c = unlocked ? cat.color : '#444';
+  const eye = unlocked ? '#2a2a3a' : '#555';
+  const nose = unlocked ? '#e08080' : '#666';
+  // Simple cute cat SVG
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Ears -->
+    <polygon points="20,42 10,15 35,35" fill="${c}" stroke="${unlocked?'#0005':'#333'}" stroke-width="1"/>
+    <polygon points="80,42 90,15 65,35" fill="${c}" stroke="${unlocked?'#0005':'#333'}" stroke-width="1"/>
+    <polygon points="22,40 15,20 34,36" fill="${unlocked?'#ff9090':'#555'}"/>
+    <polygon points="78,40 85,20 66,36" fill="${unlocked?'#ff9090':'#555'}"/>
+    <!-- Head -->
+    <ellipse cx="50" cy="58" rx="34" ry="30" fill="${c}" stroke="${unlocked?'#0004':'#333'}" stroke-width="1.5"/>
+    <!-- Eyes -->
+    <ellipse cx="37" cy="52" rx="7" ry="7" fill="white"/>
+    <ellipse cx="63" cy="52" rx="7" ry="7" fill="white"/>
+    <ellipse cx="38" cy="53" rx="4" ry="5" fill="${eye}"/>
+    <ellipse cx="64" cy="53" rx="4" ry="5" fill="${eye}"/>
+    <circle cx="39" cy="51" r="1.5" fill="white"/>
+    <circle cx="65" cy="51" r="1.5" fill="white"/>
+    <!-- Nose -->
+    <ellipse cx="50" cy="64" rx="4" ry="3" fill="${nose}"/>
+    <!-- Mouth -->
+    <path d="M46,67 Q50,71 54,67" stroke="${unlocked?'#8040404':'#555'}" stroke-width="1.5" fill="none"/>
+    <!-- Whiskers -->
+    <line x1="14" y1="62" x2="40" y2="64" stroke="${unlocked?'#fff8':'#444'}" stroke-width="1.2"/>
+    <line x1="14" y1="67" x2="40" y2="66" stroke="${unlocked?'#fff8':'#444'}" stroke-width="1.2"/>
+    <line x1="60" y1="64" x2="86" y2="62" stroke="${unlocked?'#fff8':'#444'}" stroke-width="1.2"/>
+    <line x1="60" y1="66" x2="86" y2="67" stroke="${unlocked?'#fff8':'#444'}" stroke-width="1.2"/>
+    ${unlocked ? '' : '<rect x="0" y="0" width="100" height="100" fill="#1a1a1a" opacity="0.6" rx="8"/>'}
+  </svg>`;
+}
+
+function renderCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  const unlocked = catUnlocked.length;
+  const total = Object.keys(UNITS).length;
+  document.getElementById('cat-count').textContent = `${unlocked} / ${total}`;
+
+  grid.innerHTML = Object.entries(UNITS).map(([k, name]) => {
+    const unitNum = parseInt(k);
+    const isUnlocked = catUnlocked.includes(unitNum);
+    const cat = CAT_DATA[(unitNum-1) % CAT_DATA.length];
+    return `<div class="cat-card ${isUnlocked ? 'unlocked' : 'locked'}">
+      <div class="cat-svg-wrap">${getCatSVG(unitNum, isUnlocked)}</div>
+      <div class="cat-breed">${isUnlocked ? cat.breed : '???'}</div>
+      <div class="cat-unit">${isUnlocked ? `単元${unitNum}` : '未解放'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function setupSettingsUI() {
+  const examInput = document.getElementById('setting-exam-date');
+  const goalInput = document.getElementById('setting-daily-goal');
+
+  examInput.value = settings.examDate || '';
+  goalInput.value = settings.dailyGoal || 10;
+
+  examInput.addEventListener('change', () => {
+    settings.examDate = examInput.value;
+    saveLocal(); renderCountdown(); updateHome();
+  });
+  goalInput.addEventListener('change', () => {
+    settings.dailyGoal = parseInt(goalInput.value) || 10;
+    saveLocal(); updateHome();
+  });
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify({progress, dailyStats, settings, catUnlocked}, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `denken_backup_${TODAY}.json`;
+  a.click();
+}
+
+function confirmReset() {
+  if (confirm('全データをリセットします。よろしいですか？\nこの操作は元に戻せません。')) {
+    progress = {}; dailyStats = {}; catUnlocked = [];
+    saveLocal();
+    db.ref(`users/${FB_USER}`).remove();
+    updateHome(); renderCalendar(); renderUnitChart(); renderCatGrid(); updateHeader();
+    alert('リセットしました。');
+  }
+}
+
+// ============================================================
+// SCREEN NAVIGATION
+// ============================================================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  const navBtn = document.getElementById('nav-' + name);
+  if (navBtn) navBtn.classList.add('active');
+
+  if (name === 'stats') {
+    renderCalendar(); renderUnitChart(); updateHeader();
+  }
+  if (name === 'cats') { renderCatGrid(); }
+  if (name === 'home') { updateHome(); }
+  if (name === 'quiz') {
+    document.getElementById('nav-quiz').style.display = '';
+    renderQuestion();
+  }
+}
+
+// ============================================================
+// START
+// ============================================================
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
