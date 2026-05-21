@@ -113,11 +113,28 @@ select option { background: var(--bg3); }
 #quiz-progress-text { font-size: 13px; color: var(--text2); flex: 1; }
 #quiz-correct-rate { font-size: 14px; font-weight: 700; color: var(--accent); }
 #quiz-img-wrap {
-  background: var(--bg2); border-radius: 10px; overflow: hidden;
+  background: var(--bg2); border-radius: 10px;
   border: 1px solid var(--border);
+  flex-shrink: 0;
 }
-#quiz-img-q, #quiz-img-a-wrap img {
-  width: 100%; display: block;
+#quiz-img-q {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  transition: max-height .3s ease;
+}
+#quiz-img-q.spoiler {
+  max-height: 55vh;
+  object-fit: cover;
+  object-position: top center;
+}
+.spoiler-notice {
+  font-size: 11px; color: var(--text2); text-align: center;
+  padding: 6px; background: var(--bg3); border-radius: 0 0 10px 10px;
+  display: none;
+}
+.spoiler-notice.visible { display: block; }
+#quiz-img-a-wrap img {
+  width: 100%; height: auto; display: block;
+  border-top: 1px solid var(--border);
 }
 #quiz-img-a-wrap { display: none; }
 #quiz-answer-label {
@@ -331,6 +348,7 @@ select option { background: var(--bg3); }
       <div id="quiz-answer-label"></div>
       <div id="quiz-img-wrap">
         <img id="quiz-img-q" src="" alt="問題画像" loading="lazy">
+        <div id="spoiler-notice" class="spoiler-notice">⚠️ この問題は同ページに解説あり。答えを選ぶと表示されます</div>
         <div id="quiz-img-a-wrap"></div>
       </div>
       <div class="btn-choices" id="quiz-choices">
@@ -728,6 +746,16 @@ function renderQuestion() {
   const imgQ = document.getElementById('quiz-img-q');
   imgQ.src = p.img_q;
   imgQ.alt = `${p.year} 問${p.q_num}`;
+  // Diff=1: same page has answer — hide bottom with spoiler
+  const isSamePage = (!p.img_a || p.img_a.length === 0);
+  const notice = document.getElementById('spoiler-notice');
+  if (isSamePage) {
+    imgQ.classList.add('spoiler');
+    notice.classList.add('visible');
+  } else {
+    imgQ.classList.remove('spoiler');
+    notice.classList.remove('visible');
+  }
 
   // Clear answer images
   const aWrap = document.getElementById('quiz-img-a-wrap');
@@ -794,6 +822,10 @@ function selectAnswer(n) {
   lbl.style.display = 'block';
   lbl.className = 'quiz-answer-label pop-in ' + (correct ? 'correct' : 'wrong');
   lbl.textContent = correct ? '✅ 正解！' : `❌ 不正解  正解は ⑤`.replace('⑤', ['①','②','③','④','⑤'][p.answers.main-1]);
+
+  // Remove spoiler on answer
+  document.getElementById('quiz-img-q').classList.remove('spoiler');
+  document.getElementById('spoiler-notice').classList.remove('visible');
 
   // Show explanation images
   if (p.img_a && p.img_a.length > 0) {
